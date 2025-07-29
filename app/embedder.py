@@ -38,7 +38,7 @@ def embed_chunks(
             source_file = chunk["source_file"]
             try:
                 # Create the embeddings as np.float32 and normalize if needed.
-                embeddings = model.encode(chunk["text"])
+                embeddings = model.encode(chunk["text"], show_progress_bar=False)
                 embeddings = np.asarray(embeddings, dtype=np.float32)
                 if normalize:
                     embeddings /= np.linalg.norm(embeddings, axis=-1, keepdims=True)  #(dim)
@@ -55,7 +55,7 @@ def embed_chunks(
             except Exception as e:
                 logger.error(f"Error embedding chunk {chunk_id} from {source_file}: \n{e}")
 
-    return generator, embedding_dim
+    return generator(), embedding_dim
 
 
 def get_embedding_dimension_from_model(model: Any) -> int:

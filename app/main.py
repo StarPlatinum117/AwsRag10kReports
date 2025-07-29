@@ -40,6 +40,8 @@ def run_rag_retrieval_pipeline(config: RAGConfig) -> None:
         transform_s3_uri_to_dict(s3_uri)
         for s3_uri in list_s3_files_with_suffix(s3_prefix=config.doc_dir, suffix=".txt")
     )
+    #ToDo: this step is for quick testing. Delete later.
+    generator_documents = [next(generator_documents) for _ in range(2)]
 
     logger.info("Splitting documents into chunks...")
     # Split documents into chunks.

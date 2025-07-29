@@ -1,6 +1,7 @@
 import io
 import json
 import logging
+import tempfile
 from typing import Any
 from typing import Iterable
 from typing import Iterator
@@ -32,8 +33,8 @@ def build_index(
     index = faiss.IndexFlatIP(dim)
     count = 0
 
-    # Metadata is written to memory as JSONL.
-    metadata_buffer = io.StringIO()
+    # Metadata is written to memory as JSONL. Lines should be encoded.
+    metadata_buffer = io.BytesIO()
 
     for chunk in chunks:
         chunk_id = chunk["chunk_id"]
@@ -43,7 +44,8 @@ def build_index(
             index.add(embedding)
             # Save current chunk metadata to buffer file. Add newline manually. 
             del chunk["embedding"]
-            metadata_buffer.write(json.dumps(chunk, ensure_ascii=False) +"\n")
+            jsonline = json.dumps(chunk, ensure_ascii=False) +"\n"
+            metadata_buffer.write(jsonline.encode("utf-8"))
             count += 1
 
         except Exception as e:
@@ -55,11 +57,11 @@ def build_index(
     s3.upload_fileobj(metadata_buffer, Bucket=metadata_bucket, Key=metadata_key)
     logger.info(f"Chunks metadata uploaded to S3 at {output_metadata_path}")
 
-    # Write FAISS index to memory and upload to S3.
-    index_buffer = io.BytesIO()
-    faiss.write_index(index, index_buffer)
-    index_buffer.seek(0)
-    index_bucket, index_key = parse_s3_uri(output_index_path)
-    s3.upload_fileobj(index_buffer, Bucket=index_bucket, Key=metadata_key)
-    logger.info(f"FAISS index with {count} vectors uploaded to S3 at {output_index_path}")
+    # Index is written to a temp file, then uploaded to S3.
+    with tempfile.NamedTemporaryFile(suffix=".index", delete=True) as tmp:
+        faiss.write_index(index, tmp.name)
+        tmp.flush()  # to ensure all data is written
+        index_bucket, index_key = parse_s3_uri(output_index_path)
+        s3.upload_fileobj(tmp, Bucket=index_bucket, Key=index_key)
+        logger.info(f"FAISS index with {count} vectors uploaded to S3 at {output_index_path}")
     

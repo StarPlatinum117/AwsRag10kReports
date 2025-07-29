@@ -65,7 +65,7 @@ def list_s3_files_with_suffix(*, s3_prefix: str, suffix: str = "") -> Iterator[s
     for page in page_iterator:
         # "Contents" contains the list of objects in the page (may be empty).
         for obj in page.get("Contents", []):
-            key = obj["key"]  # full path within the bucket
+            key = obj["Key"]  # full path within the bucket
             # Yield keys that match the suffix filter.
             if key.endswith(suffix):
                 yield f"s3://{bucket}/{key}"
