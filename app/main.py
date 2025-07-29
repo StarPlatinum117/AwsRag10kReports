@@ -8,15 +8,14 @@ if PROJECT_ROOT not in sys.path:
 import logging
 from typing import Any
 
+from app.chunker import split_documents
+from app.embedder import embed_chunks
+from app.indexer import build_index
 from aws.s3_utils import list_s3_files_with_suffix
 from aws.s3_utils import transform_s3_uri_to_dict
-from chunker import split_documents
-from embedder import embed_chunks
-from indexer import build_index
 from logging_config import setup_logging
 from rag_config import AWS_RAG_CONFIG
 from rag_config import RAGConfig
-from retriever import DocumentRetriever
 
 setup_logging()
 logger = logging.getLogger(__name__)
@@ -67,27 +66,6 @@ def run_rag_retrieval_pipeline(config: RAGConfig) -> None:
         output_index_path=config.path_to_index,
         output_metadata_path=config.path_to_metadata,
     )
-    
-
-def get_rag_retriever(config: RAGConfig, build_index: bool = False) -> DocumentRetriever:
-    """
-    Initializes and returns a DocumentRetriever instance based on RAG configuration.
-
-    If `build_index` is True, the RAG retrieval pipeline will be executed using the
-    provided configuration before constructing the retriever. This is necessary when the index
-    and metadata files have not yet been generated.
-
-    Parameters:
-        config: Configuration object containing all relevant paths, parameters, and embedding model required for retrieval.
-        build_index: Whether to run the RAG pipeline before loading the retriever. Defaults to False.
-
-    Returns:
-        DocumentRetriever: An instance configured to perform retrieval using the precomputed index and metadata.
-    """
-    if build_index:
-        run_rag_retrieval_pipeline(config)
-    retriever = DocumentRetriever(config.path_to_index, config.path_to_metadata)
-    return retriever
 
 
 if __name__ == "__main__":

@@ -8,6 +8,8 @@ import faiss
 import numpy as np
 from smart_open import open as sopen
 
+from app.main import run_rag_retrieval_pipeline
+from rag_config import RAGConfig
 
 logger = logging.getLogger(__name__)
 
@@ -135,3 +137,24 @@ class DocumentRetriever:
             sample_text = chunk["text"][:200].replace("\n", " ")
             logger.info(f"Source file: {source}. Chunk ID: {idx}. \nRetrieved text: {sample_text}")
         logging.info("="*70)
+
+
+def get_rag_retriever(config: RAGConfig, build_index: bool = False) -> DocumentRetriever:
+    """
+    Initializes and returns a DocumentRetriever instance based on RAG configuration.
+
+    If `build_index` is True, the RAG retrieval pipeline will be executed using the
+    provided configuration before constructing the retriever. This is necessary when the index
+    and metadata files have not yet been generated.
+
+    Parameters:
+        config: Configuration object containing all relevant paths, parameters, and embedding model required for retrieval.
+        build_index: Whether to run the RAG pipeline before loading the retriever. Defaults to False.
+
+    Returns:
+        DocumentRetriever: An instance configured to perform retrieval using the precomputed index and metadata.
+    """
+    if build_index:
+        run_rag_retrieval_pipeline(config)
+    retriever = DocumentRetriever(config.path_to_index, config.path_to_metadata)
+    return retriever
