@@ -1,5 +1,6 @@
 import json
 import logging
+import tempfile
 from typing import Any
 from typing import Iterable
 
@@ -11,7 +12,6 @@ from smart_open import open as sopen
 logger = logging.getLogger(__name__)
 
 
-
 class DocumentRetriever:
     def __init__(self, index_path: str, metadata_path: str):
         """
@@ -21,16 +21,28 @@ class DocumentRetriever:
             index_path: S3 URI where the index file is saved.
             metadata_path: S3 URI where the chunks metadata file is saved.
         """ 
-        try:
-            with sopen(index_path, "rb") as f:
-                self.index = faiss.read_index(f)
-                logger.debug(f"FAISS index loaded from {index_path}")
-        except Exception as e:
-            logger.error(f"Failed to load FAISS index from {index_path}: {e}")
-            raise
+        self.index = self.read_index_file_from_S3(index_path)
         self.metadata_path = metadata_path
         self.metadata_offsets = self.build_line_offsets(metadata_path)
     
+    @staticmethod
+    def read_index_file_from_S3(path: str) -> faiss.Index:
+        """
+        Loads the FAISS index file from S3 as a temp file and reads it using faiss.
+        Args: 
+            path: S3 URI where the index file is saved.
+        Returns:
+            FAISS index.
+        """
+        try:
+            with sopen(path, "rb") as s3_file:
+                with tempfile.NamedTemporaryFile(delete=True) as tmp_file:
+                    tmp_file.write(s3_file.read())
+                    tmp_file.flush()
+                    return faiss.read_index(tmp_file.name)
+        except Exception as e:
+            logger.error(f"Failed to load index file from {path}: {e}")
+
     @staticmethod
     def build_line_offsets(file_path: str) -> list[int]:
         """
@@ -64,7 +76,7 @@ class DocumentRetriever:
             raise
         return offsets
 
-    def retrieve(self, query_embedding: np.ndarray, k: int = 3) -> list[dict[str, Any]]:
+    def retrieve(self, query_embedding: np.ndarray, k: int = 3, print_sample: bool = False) -> list[dict[str, Any]]:
         """
         Searches the FAISS index using the query embedding and returns the top-k metadata entries.
 
@@ -80,11 +92,13 @@ class DocumentRetriever:
             query_embedding = query_embedding[np.newaxis, :]
         query_embedding = query_embedding.astype(np.float32)
         scores, indices = self.index.search(query_embedding, k)
-        
-        # Print matched chunks for debugging.
-        logger.debug(f"Search results:\n{indices=}\n{scores=}")
 
         topk_chunks = self.get_chunk_metadata_by_index(indices.flatten(), scores.flatten())
+        
+        # Print a small sample of retrieved chunks to console.
+        if print_sample:
+            self.print_chunk_samples(topk_chunks)
+           
         return topk_chunks
     
     def get_chunk_metadata_by_index(self, line_indices: Iterable[int], scores: Iterable[float]) -> list[dict[str, Any]]:
@@ -111,3 +125,13 @@ class DocumentRetriever:
             logger.error(f"Failed to load metadata file from {self.metadata_path}: {e}")
             raise
         return chunks
+    
+    @staticmethod
+    def print_chunk_samples(chunks: list[dict[str, Any]]) -> None:
+        logging.info("Chunks retrieved (excerpts): " + "="*30)
+        for chunk in chunks:
+            idx = chunk["chunk_id"]
+            source = chunk["source_file"]
+            sample_text = chunk["text"][:200].replace("\n", " ")
+            logger.info(f"Source file: {source}. Chunk ID: {idx}. \nRetrieved text: {sample_text}")
+        logging.info("="*70)
