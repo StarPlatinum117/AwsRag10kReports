@@ -1,0 +1,7 @@
+boto3
+faiss-cpu
+numpy
+rich
+sentence-transformers
+smart_open
+transformers
