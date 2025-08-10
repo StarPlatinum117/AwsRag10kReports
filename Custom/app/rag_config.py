@@ -39,7 +39,7 @@ class RAGConfig:
 AWS_RAG_CONFIG = RAGConfig(
     doc_dir=DOCUMENTS_DIR,
     chunk_size=1000,
-    chunk_overlap=0,
+    chunk_overlap=250,
     embedding_model=embedding_model,
     path_to_index=PATH_TO_FAISS_INDEX,
     path_to_metadata=PATH_TO_CHUNKS_METADATA,
