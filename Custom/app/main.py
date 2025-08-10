@@ -19,7 +19,7 @@ from rag_config import RAGConfig
 
 setup_logging()
 logger = logging.getLogger(__name__)
-logger.info("App started.")
+logger.info("App started (Custom version).")
 
 
 def run_rag_retrieval_pipeline(config: RAGConfig) -> None:
