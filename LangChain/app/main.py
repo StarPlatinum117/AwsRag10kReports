@@ -5,8 +5,9 @@ from Custom.logging_config import setup_logging
 from Custom.app.rag_config import AWS_RAG_CONFIG
 from Custom.app.rag_config import RAGConfig
 
-from LangChain.app.loader import load_10k_text_files
 from LangChain.app.chunker import chunk_documents
+from LangChain.app.loader import load_10k_text_files
+from LangChain.app.embedder import embed_chunks
 
 setup_logging()
 logger = logging.getLogger(__name__)
@@ -21,9 +22,20 @@ def run_rag_retrieval_pipeline(config: RAGConfig) -> None:
         config: An instance of the RAGConfig class to run all the functions. 
     """
     logger.info("Commencing index generation pipeline.")
+
     generator_documents = load_10k_text_files(config.doc_dir)
-    generator_chunks = chunk_documents(generator_documents, config.chunk_size, config.chunk_overlap)
-    
+
+    generator_chunks = chunk_documents(
+        generator_documents,
+        config.chunk_size,
+        config.chunk_overlap
+    )
+
+    embeddings_dim, generator_embeddings = embed_chunks(
+        generator_chunks,
+        config.embedding_model,
+        normalize=config.normalize_embeddings
+    )
 
 if __name__ == "__main__":
     run_rag_retrieval_pipeline(AWS_RAG_CONFIG)

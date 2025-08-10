@@ -55,7 +55,7 @@ def embed_chunks(
             except Exception as e:
                 logger.error(f"Error embedding chunk {chunk_id} from {source_file}: \n{e}")
 
-    return generator(), embedding_dim
+    return embedding_dim, generator()
 
 
 def get_embedding_dimension_from_model(model: Any) -> int:

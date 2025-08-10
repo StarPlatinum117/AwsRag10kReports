@@ -52,7 +52,7 @@ def run_rag_retrieval_pipeline(config: RAGConfig) -> None:
 
     logger.info("Generating chunk embeddings...")
     # Create chunk embeddings.
-    generator_embeddings, embeddings_dimension = embed_chunks(
+    embeddings_dimension, generator_embeddings = embed_chunks(
         chunks=generator_chunks,
         model=config.embedding_model,
         normalize=config.normalize_embeddings,
