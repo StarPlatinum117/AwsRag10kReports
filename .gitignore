@@ -1,0 +1,9 @@
+# Ignore .vscode
+.vscode/
+
+# Ignore __pycache__
+__pycache__/
+
+# Ignore deployment packages.
+deployment/
+lambda_package.zip
