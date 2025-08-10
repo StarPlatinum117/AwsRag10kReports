@@ -3,7 +3,9 @@ import numpy as np
 
 from typing import Any
 from typing import Iterable
+from typing import Iterator
 
+from langchain_core.documents import Document
 from langchain_core.embeddings import Embeddings
 
 from Custom.app.rag_config import RAGConfig
@@ -48,7 +50,7 @@ def embed_chunks(*,
         Tuples of (embedding array, Document) for each chunk.
     """
     # Create batches of text and Document metadata.
-    embedder = SentenceTransformersEmbeddings(model, normalize=normalize)
+    embedder = SentenceTransformersEmbeddings(embedding_model, normalize=normalize)
     batch = []
     docs_batch = []
     for chunk in chunks:
