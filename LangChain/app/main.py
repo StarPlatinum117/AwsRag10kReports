@@ -31,11 +31,13 @@ def run_rag_retrieval_pipeline(config: RAGConfig) -> None:
         config.chunk_overlap
     )
 
-    embeddings_dim, generator_embeddings = embed_chunks(
-        generator_chunks,
-        config.embedding_model,
-        normalize=config.normalize_embeddings
+    generator_embeddings = embed_chunks(
+        chunks=generator_chunks,
+        embedding_model=config.embedding_model,
+        normalize=config.normalize_embeddings,
+        batch_size=config.batch_size
     )
+
 
 if __name__ == "__main__":
     run_rag_retrieval_pipeline(AWS_RAG_CONFIG)
