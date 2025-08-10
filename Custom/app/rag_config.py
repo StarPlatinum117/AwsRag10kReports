@@ -7,9 +7,9 @@ from sentence_transformers import SentenceTransformer
 
 from typing import Any
 
-from aws.s3_paths import DOCUMENTS_DIR
-from aws.s3_paths import PATH_TO_CHUNKS_METADATA
-from aws.s3_paths import PATH_TO_FAISS_INDEX
+from Custom.aws.s3_paths import DOCUMENTS_DIR
+from Custom.aws.s3_paths import PATH_TO_CHUNKS_METADATA
+from Custom.aws.s3_paths import PATH_TO_FAISS_INDEX
 
 
 # --- Select your model here ---

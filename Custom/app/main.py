@@ -72,11 +72,7 @@ if __name__ == "__main__":
     """
     CLI entry point to build the RAG index using the config file AWS_RAG_CONFIG.
     """
-    #run_rag_retrieval_pipeline(AWS_RAG_CONFIG)
-    logger.setLevel(logging.DEBUG)
-    logger.debug("It's debug time!")
-    logger.setLevel(logging.INFO)
-    logger.info("It's info time now!")
+    # run_rag_retrieval_pipeline(AWS_RAG_CONFIG)
     retriever = get_rag_retriever(AWS_RAG_CONFIG)
     query = "What are the main financial risks disclosed in the 2022 filings?"
     query_emb = AWS_RAG_CONFIG.embedding_model.encode(query, show_progress_bar=True)

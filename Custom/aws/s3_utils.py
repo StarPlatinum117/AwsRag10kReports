@@ -1,8 +1,7 @@
 import logging
 from pathlib import Path
-from urllib.parse import urlparse
-
 from typing import Iterator
+from urllib.parse import urlparse
 
 import boto3
 from smart_open import open as sopen
