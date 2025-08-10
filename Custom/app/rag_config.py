@@ -34,6 +34,7 @@ class RAGConfig:
     path_to_index: str
     path_to_metadata: str
     normalize_embeddings: bool = False
+    batch_size: int = 32
 
 
 AWS_RAG_CONFIG = RAGConfig(
@@ -44,4 +45,5 @@ AWS_RAG_CONFIG = RAGConfig(
     path_to_index=PATH_TO_FAISS_INDEX,
     path_to_metadata=PATH_TO_CHUNKS_METADATA,
     normalize_embeddings=True,
+    batch_size=32,
 )
